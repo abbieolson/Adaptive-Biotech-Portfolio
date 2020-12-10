@@ -8,6 +8,7 @@ Languages and Tools:
   * seaborn
   * Matplotlib
   * Plotly
+  * Jupyter
 * HTML
 
 ### Pre-Processing:
@@ -97,6 +98,7 @@ fig5.show()
 
 ### Random Forest
 * scikit-learn
+* Matplotlib
 ```python3
 df = df
 target = 'target'
@@ -248,7 +250,7 @@ html_string = '''
     <p style="text-align:center;font-size:16px;">Stuff about the figure.</p>
 
 
-    <p style="text-align:center;font-size:25px;">ROC-AUC of Random Forest Classifier</p>
+    <p style="text-align:center;font-size:25px;">AUROC of Random Forest Classifier</p>
     <p style="text-align:center;font-size:16px;">Stuff about the figure.</p>
     <img src="../PROJECTS/rf_roc_auc.png" style="width:50%">
     <p style="text-align:center;font-size:16px;">Stuff about the figure.</p>
@@ -260,6 +262,6 @@ html_string = '''
 ```
 ```python3
 # write selected results to HTML filename
-with open("amp_bias_proj_report.html", 'w') as f:
+with open("proj_report.html", 'w') as f:
     f.write(html_string)
 ```
