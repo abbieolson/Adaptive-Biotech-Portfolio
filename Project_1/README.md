@@ -22,7 +22,7 @@ df = pd.DataFrame(df, index=df.index, columns=df.columns)
 df = df[(df.thing1 == "other_thing")]
 df = df[(df.thing2 == "another_thing")]
 
-target = 'amp_bias'
+target = 'target'
 
 # plot missing values
 ans = df.drop(target, axis=1).isnull().sum().sort_values(ascending=False)
