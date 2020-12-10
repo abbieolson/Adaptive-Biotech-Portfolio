@@ -13,10 +13,23 @@
 ----------
 ### Pre-Processing:
 * pandas
+* seaborn
 ```python3
-# Make Dataframe
+# Make Dataframe and Plot Missing Values
 df = pd.read_csv('df.csv', low_memory=False)
 df = pd.DataFrame(df, index=df.index, columns=df.columns)
+
+df = df[(df.thing1 == "other_thing")]
+df = df[(df.thing2 == "another_thing")]
+
+target = 'amp_bias'
+
+# plot missing values
+ans = df.drop(target, axis=1).isnull().sum().sort_values(ascending=False)
+plt.figure(figsize=(12,2))
+sns.heatmap(pd.DataFrame(data=ans[ans>0], columns=['Missing Values']).T, annot=True, cbar=False, cmap='viridis', annot_kws={'rotation': 90})
+
+plt.savefig('missing_vals.png')
 ```
 
 ### Data Visualizations:
