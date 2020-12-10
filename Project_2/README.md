@@ -235,6 +235,9 @@ THING=/home/model/thing.csv
 ```
 ### Run the Output from the Slurm Script in a Logistic Regression
 * Python
+* scikit-learn
+* NumPy
+* SciPy
 * Plotly
 ```python3
 # concat just the training portion of the sample key to the TCR df
