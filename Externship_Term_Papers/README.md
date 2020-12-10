@@ -1,2 +1,2 @@
-# Recent-Projects
-Collection of projects from my externship at Adaptive Biotechnologies in Seattle, WA.
+## Internship Term Papers
+See my term papers for technical information on some of my projects.
