@@ -10,7 +10,7 @@
   * Plotly
   * Jupyter
 * HTML
-
+-------------------------
 ### Pre-Processing:
 * pandas
 ```python3
@@ -169,6 +169,7 @@ plt.savefig('rf_roc_auc.png')
 * Python
 ```html
 HTML script for writing final report
+
 html_string = '''
 <html>
     <head>
