@@ -16,14 +16,14 @@
 ```python3
 # Get contiguous substrings from given strings, create Cartesian product, get fuzzy scores
 def get_substring(string, len_k):
-    '''Function to get all substrings of a specific length (k) -- ie string of nucleotides (probes) and a specified string length (len_k)'''
+    '''Function to get all substrings of a specific length (k)'''
     substr = [string[x: y] for x in range(len(string)) for y in range(x + 1, len(string) + 1) if len(string[x:y]) == len_k]
     return substr
 
 # add flags for running .py script on the command line
 parser = argparse.ArgumentParser(description="Program to calculate cartesian product and filter by Levenshtein scores.")
 
-parser.add_argument("-p", "--strings", help="Provide a file containing [redacted] sequences (do not include a header row) that you wish to turn into strings.", required=True, type=str)
+parser.add_argument("-p", "--strings", help="Provide a file containing sequences (do not include a header row) that you wish to turn into strings.", required=True, type=str)
 parser.add_argument("-k", "--kmer", help="Specify the length of the thing.", required=True, type=int)
 parser.add_argument("-c", "--cdr3s", help="Provide a file containing some things (do not include a header row) that you wish to test for Levenshtein scores.", required=True, type=str)
 parser.add_argument("-t", "--threshold", help="Specify a Levenshtein threshold (between 0 and 100). The threshold is not inclusive.", required=True, type=int)
@@ -41,7 +41,7 @@ with open(STRINGS, newline='') as f1, open(THINGS, newline='') as f2:
 #######################
 
 # get list of sequences
-sequences = [] # list for the test cdr3s, contains all 129 enhanced TCRs and 100 others
+sequences = []
 for i in thing1:
     for j in i:
         sequences.append(j)
@@ -81,7 +81,7 @@ f3.close()
 #SBATCH --job-name=some_job
 #SBATCH --output=slurm-%j-%x.out
 #SBATCH --nodes=1                ### Node count required for the job
-#SBATCH --ntasks=1		### Cores
+#SBATCH --ntasks=1	             ### Cores
 #SBATCH --time=15-00:00:00       ### Days-HH:MM:SS
 #SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=100
@@ -121,19 +121,19 @@ parser = argparse.ArgumentParser(description="Program to produce a model for thi
 parser.add_argument("-p", "--thing", help="Specify thing length. It corresponds with the input thing file.", required=True, type=int)
 parser.add_argument("-i", "--input", help="Input file containing all things with a Levenshtein distance of at least 90.", required=True, type=str)
 parser.add_argument("-s", "--seqs", help="Provide the path to the sequences.", required=True, type=str)
-parser.add_argument("-e", "--enhanced", help="Proved the path to the dataset containing all sequences.", required=True, type=str)
+parser.add_argument("-e", "--other", help="Proved the path to the dataset containing all sequences.", required=True, type=str)
 parser.add_argument("-ct", "--counts", help="Specify how many sequences one thing can target.", required=True, type=int)
 
 args = parser.parse_args()
 
-# read in enhanced seqs
+# read in other seqs
 df = pd.read_csv(SEQS, names=['seq_thing'], low_memory=False)
-enhanced = list(enhanced_df['seq_thing'])
+other = list(other_df['seq_thing'])
 
-df = pd.read_csv(ENHANCED, low_memory=False, usecols=['seq_thing','sample','status'])
+df = pd.read_csv(other, low_memory=False, usecols=['seq_thing','sample','status'])
 encode = {True:1, False:0}
 df['status'] = df['status'].map(encode)
-CMV_df = pd.merge(enhanced_df,df)
+other_df = pd.merge(other_df,df)
 
 # read in filtered df
 kmer = pd.read_csv(INPUT, low_memory=False, names=['things','seq_thing','edit_dist'])
@@ -165,7 +165,7 @@ grouped = kmer_df1.groupby(['sample'], as_index=False).agg({'seq_thing':'nunique
                                                     'edit_dist':'nunique',
                                                     'status':'first'})
 
-df_sub = df[df['seq_thing'].str.contains('|'.join(enhanced), na=False)]
+df_sub = df[df['seq_thing'].str.contains('|'.join(other), na=False)]
 
 # list of dataframes by sample
 dfs_sub = [v for k, v in df_sub.groupby('sample')]
@@ -184,7 +184,7 @@ full_sample_dfs = [v for k, v in full_samples.groupby('sample')]
 
 # get unique counts
 for i in range(len(full_sample_dfs)):
-    thing_ct.append(len(pd.merge(enhanced_df, full_sample_dfs[i])))
+    thing_ct.append(len(pd.merge(other_df, full_sample_dfs[i])))
     status.append(full_sample_dfs[i]['status'].iloc[0])
     unique_seqs.append(len(full_sample_dfs[i]['seq_thing'].unique())) # CHANGE TO FULL_SAMPLE_DFS LATER
 
@@ -201,8 +201,8 @@ features = pd.DataFrame(
 #SBATCH --job-name=feats
 #SBATCH --output=slurm-%j-%x.out
 #SBATCH --nodes=1               ### Node count required for the job
-#SBATCH --ntasks=1		### Cores
-#SBATCH --time=15-00:00:00       ### Days-HH:MM:SS
+#SBATCH --ntasks=1	           	### Cores
+#SBATCH --time=15-00:00:00      ### Days-HH:MM:SS
 #SBATCH --cpus-per-task=10
 #SBATCH --mem-per-cpu=100
 #SBATCH --mail-user=name@email.com
