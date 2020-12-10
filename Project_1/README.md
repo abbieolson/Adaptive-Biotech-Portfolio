@@ -159,7 +159,9 @@ plt.ylabel('True Positive Rate')
 plt.xlabel('False Positive Rate')
 plt.savefig('rf_roc_auc.png')
 ```
+## Create Report
 * HTML
+* Python
 ```html
 # HTML script for writing report
 html_string = '''
@@ -255,7 +257,9 @@ html_string = '''
     </body>
 </html>'''
 
-# Write selected results to HTML filename
+```
+```python3
+# write selected results to HTML filename
 with open("amp_bias_proj_report.html", 'w') as f:
     f.write(html_string)
 ```
