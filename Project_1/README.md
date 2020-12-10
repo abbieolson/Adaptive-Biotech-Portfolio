@@ -1,5 +1,5 @@
 ## Project 1 - Classifier identifying and analyzing potential inaccuracies
-**#### Languages and Tools:**
+#### **Languages and Tools:**
 * Python
   * pandas
   * NumPy
@@ -101,7 +101,7 @@ fig5.show()
 * scikit-learn
 * Matplotlib
 ```python3
-# Selecting important features, creating a Ranom Forest model, and assessing with a ROC curve
+# Selecting important features, creating a Random Forest model, and assessing with a ROC curve
 df = df
 target = 'target'
 
