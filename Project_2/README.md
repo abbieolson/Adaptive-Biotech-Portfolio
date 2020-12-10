@@ -206,7 +206,7 @@ features = pd.DataFrame(
  'sample':samples,
  'Unique_seqs':unique_seqs})
 
-features.to_csv(f'{thing}.csv', index=False)\
+features.to_csv(f'{thing}.csv', index=False)
 ```
 ### Get Counts of Strings of Specified Lengths Using the Above Script
 * Bash
