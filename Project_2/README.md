@@ -12,7 +12,7 @@
 * Bash
   * Slurm
 ---------------
-### Design Contiguous Strings and Get a Cartesian Product (Equivalent to an SQL Cross-Join)
+### Design Contiguous Strings and Get Cartesian Product (Equivalent to an SQL Cross-Join)
 ```python3
 # Get contiguous substrings from given strings, create Cartesian product, get fuzzy scores
 def get_substring(string, len_k):
@@ -74,14 +74,14 @@ for cartesian_tuples in chunked_cartesian_product(*[string_array, thing_array], 
 
 f3.close()
 ```
-### Get Fuzzy Scores by Running .py Script on Cluster with Slurm (Workload Manager)
+### Get Fuzzy Scores by Running the Above Script on Cluster with Slurm (Workload Manager)
 ```bash
 #!/bin/bash
 
 #SBATCH --job-name=some_job
 #SBATCH --output=slurm-%j-%x.out
 #SBATCH --nodes=1                ### Node count required for the job
-#SBATCH --ntasks=1	             ### Cores
+#SBATCH --ntasks=1	           
 #SBATCH --time=15-00:00:00       ### Days-HH:MM:SS
 #SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=100
@@ -194,14 +194,14 @@ features = pd.DataFrame(
  'sample':samples,
  'Unique_seqs':unique_seqs})
 ```
-### Get Strings of Specified Lengths Using the Above .py Script
+### Get Strings of Specified Lengths Using the Above Script
 ```bash
 #!/bin/bash
 
 #SBATCH --job-name=feats
 #SBATCH --output=slurm-%j-%x.out
 #SBATCH --nodes=1               ### Node count required for the job
-#SBATCH --ntasks=1	           	### Cores
+#SBATCH --ntasks=1	     
 #SBATCH --time=15-00:00:00      ### Days-HH:MM:SS
 #SBATCH --cpus-per-task=10
 #SBATCH --mem-per-cpu=100
