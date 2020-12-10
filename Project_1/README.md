@@ -23,6 +23,7 @@ df = pd.DataFrame(df, index=df.index, columns=df.columns)
 * Matplotlib
 * NumPy
 ```python3
+# Correlation Heatmao
 def make_pair_plot(df):
     '''Function to make correlation plots with seaborn'''
     sns.set(style="white")
@@ -46,7 +47,7 @@ def make_pair_plot(df):
 ```
 * Plotly
 ```python3
-# Gene Name Counts
+# Interactive Bar Chart
 fig5 = make_subplots(rows=2, cols=1)
 
 fig5.append_trace(go.Bar(
@@ -100,6 +101,7 @@ fig5.show()
 * scikit-learn
 * Matplotlib
 ```python3
+# Selecting important features, creating a Ranom Forest model, and assessing with a ROC curve
 df = df
 target = 'target'
 
@@ -138,7 +140,7 @@ y_pred_RF_train=RF.predict(X_train)
 # get top 20 features
 feat_importances = pd.Series(RF.feature_importances_, index=X.columns)
 feat_importances.nlargest(19).plot(kind='barh')
-plt.savefig('FIGS_OUT/rf_imp_feats.png')
+plt.savefig('imp_feats.png')
 
 # subset to top 15 features
 feature_list = list(X)
@@ -165,7 +167,7 @@ plt.savefig('rf_roc_auc.png')
 * HTML
 * Python
 ```html
-# HTML script for writing report
+# HTML script for writing final report
 html_string = '''
 <html>
     <head>
