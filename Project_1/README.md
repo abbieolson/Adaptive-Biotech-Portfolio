@@ -14,6 +14,7 @@
 ### Pre-Processing:
 * pandas
 ```python3
+# Make Dataframe
 df = pd.read_csv('df.csv', low_memory=False)
 df = pd.DataFrame(df, index=df.index, columns=df.columns)
 ```
@@ -23,7 +24,7 @@ df = pd.DataFrame(df, index=df.index, columns=df.columns)
 * Matplotlib
 * NumPy
 ```python3
-# Correlation Heatmao
+# Correlation Heatmap
 def make_pair_plot(df):
     '''Function to make correlation plots with seaborn'''
     sns.set(style="white")
@@ -167,7 +168,7 @@ plt.savefig('rf_roc_auc.png')
 * HTML
 * Python
 ```html
-# HTML script for writing final report
+HTML script for writing final report
 html_string = '''
 <html>
     <head>
