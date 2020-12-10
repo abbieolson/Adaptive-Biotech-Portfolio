@@ -12,3 +12,5 @@ Check out Adaptive's [website](https://www.adaptivebiotech.com/) for more info o
 [Project 2:](/Project_2/README.md) Designed and examined DNA probes (strings) with fuzzy matching and simulations.
 
 [Project 3:](/Project_3/README.md) Developed a Python tool for laboratory researchers to easily merge and migrate inconsistent Excel data.
+
+[Term Papers:](/Externship_Term_Papers/README.md) See my term papers for technical information on some of my projects.
