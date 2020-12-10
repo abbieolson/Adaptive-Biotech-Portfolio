@@ -1,4 +1,4 @@
-## Project 2 - Designed DNA strings (things) with fuzzy matching and simulations
+## Project 2 - Designed DNA strings (probes) with fuzzy matching and simulations
 
 #### *Languages and Tools: Part I*
 * Python
@@ -11,6 +11,7 @@
   * Slurm
 ---------------
 ### Design Contiguous Strings and Get Cartesian Product (Equivalent to an SQL Cross-Join)
+* Python
 * csv
 * argparse
 * itertools
@@ -118,6 +119,7 @@ OUT=/home/RESULTS.csv
   * Slurm
 ---------------
 ### Count Strings of Specific Lengths from Cartesian Product
+* Python
 * pandas
 * scikit-learn
 * argparse
@@ -205,7 +207,7 @@ features = pd.DataFrame(
  'Unique_seqs':unique_seqs})
 ```
 ### Get Counts of Strings of Specified Lengths Using the Above Script
-* Bash 
+* Bash
 * Slurm
 ```bash
 #!/bin/bash
