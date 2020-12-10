@@ -1,4 +1,4 @@
-## Project 2 - Designed and examined DNA strings (strings) with fuzzy matching and simulations
+## Project 2 - Designed and examined DNA strings (probes) with fuzzy matching and simulations
 
 #### *Languages and Tools: Part I*
 * Python
@@ -12,11 +12,11 @@
 * Bash
   * Slurm
 ---------------
-### Design Contiguous Strings and Get a Cartesian Product
+### Design Contiguous Strings and Get a Cartesian Product (Equivalent to an SQL Cross-Join)
 ```python3
 # Get contiguous substrings from given strings, create Cartesian product, get fuzzy scores
 def get_substring(string, len_k):
-    '''Function to get all substrings of a specific length (k) -- ie string of nucleotides (string) and a specified string length (len_k)'''
+    '''Function to get all substrings of a specific length (k) -- ie string of nucleotides (probes) and a specified string length (len_k)'''
     substr = [string[x: y] for x in range(len(string)) for y in range(x + 1, len(string) + 1) if len(string[x:y]) == len_k]
     return substr
 
@@ -40,17 +40,16 @@ with open(STRINGS, newline='') as f1, open(THINGS, newline='') as f2:
 
 #######################
 
-# Get list of enhanced CDR3 sequences
+# get list of sequences
 sequences = [] # list for the test cdr3s, contains all 129 enhanced TCRs and 100 others
 for i in thing1:
     for j in i:
         sequences.append(j)
 
 seq_dict = {}
-# Use get_substring function to get each contiguous substring of each CDR3 sequence from the enhanced TCRs at a specified string length
-# Dict keys are the full CDR3s, Values are the contiguous substrings
-for i in CDR3s: # Select only the CDR3 sequences
-    if i not in CDR3_dict: # If that sequence is not already in the CDR3_dict, add key-value pairs of seqs and substrings to the dict
+# Use get_substring function to get each contiguous substring of each seq
+for i in CDR3s:
+    if i not in CDR3_dict:
         seq_dict[i] = get_substring(i, KMER)
     else:
         break
@@ -63,7 +62,7 @@ for k, v in seq_dict.items():
 
 ########################
 
-f3 = open(OUT, 'w') # Open a file that will hold string-CDR3s pairs that meet the threshold
+f3 = open(OUT, 'w') # Open a file that will hold k-v pairs that meet the threshold
 
 string_array = np.array(thing_list).flatten()
 thing_array = np.array(thing2).flatten()
@@ -86,7 +85,7 @@ f3.close()
 #SBATCH --time=15-00:00:00       ### Days-HH:MM:SS
 #SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=100
-#SBATCH --mail-user=email@email.com
+#SBATCH --mail-user=name@email.com
 #SBATCH --mail-type=ALL
 
 source deactivate
@@ -100,6 +99,7 @@ OUT=/home/RESULTS.csv
 
 /usr/bin/time -v ./GET_SEQS_PASS_THRESH.py -p $STRINGS -k 30 -c $THINGS -t 90 -o $OUT
 ```
+---------------
 #### *Languages and Tools: Part II*
 * Python
   * pandas
@@ -139,13 +139,13 @@ CMV_df = pd.merge(enhanced_df,df)
 kmer = pd.read_csv(INPUT, low_memory=False, names=['things','seq_thing','edit_dist'])
 kmer = kmer[kmer['seq_thing'].map(len) >= 18] # drop any seqs smaller than the smallest thing
 
-# reorder df by ID and split into individual dfs
+# reorder df by thing and split into individual dfs
 kmer_levs = [v for k, v in kmer.groupby('things')]
 
 things = kmer['things'].unique()
 things = pd.DataFrame(things, columns=['things'])
 
-# merge theseqs with the input seqs (output from Levenshtein algorithm)
+# merge the seqs with the input seqs (output from Levenshtein algorithm)
 dfs = []
 for i in range(len(kmer_levs)):
     dfs.append(df)
@@ -193,32 +193,29 @@ features = pd.DataFrame(
  'status':status,
  'sample':samples,
  'Unique_seqs':unique_seqs})
-
-features.to_csv('model_output.csv', index=False)
 ```
+### Get Strings of Specified Lengths Using the Above .py Script
+```bash
+#!/bin/bash
 
+#SBATCH --job-name=feats
+#SBATCH --output=slurm-%j-%x.out
+#SBATCH --nodes=1               ### Node count required for the job
+#SBATCH --ntasks=1		### Cores
+#SBATCH --time=15-00:00:00       ### Days-HH:MM:SS
+#SBATCH --cpus-per-task=10
+#SBATCH --mem-per-cpu=100
+#SBATCH --mail-user=name@email.com
+#SBATCH --mail-type=ALL
 
+source deactivate
+source activate my_root
 
+cd /home/model
 
+INPUT=/home/model/input.csv
+SEQS=/home/model/seqs.csv
+THING=/home/model/thing.csv
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-----------
+/usr/bin/time -v ./KMER_MODEL.py -p 30 -i $INPUT -s $SEQS -e $THING
+```
