@@ -1,4 +1,4 @@
-## Project 2 - Designed and examined DNA strings (probes) with fuzzy matching and simulations
+## Project 2 - Designed DNA strings (things) with fuzzy matching and simulations
 
 #### *Languages and Tools: Part I*
 * Python
@@ -6,13 +6,15 @@
   * argparse
   * itertools
   * fuzzywuzzy (python-Levenshtein)
-  * numba
   * NumPy
-  * typing
 * Bash
   * Slurm
 ---------------
 ### Design Contiguous Strings and Get Cartesian Product (Equivalent to an SQL Cross-Join)
+* csv
+* argparse
+* itertools
+* NumPy
 ```python3
 # Get contiguous substrings from given strings, create Cartesian product, get fuzzy scores
 def get_substring(string, len_k):
@@ -75,6 +77,8 @@ for cartesian_tuples in chunked_cartesian_product(*[string_array, thing_array], 
 f3.close()
 ```
 ### Get Fuzzy Scores by Running the Above Script on Cluster with Slurm (Workload Manager)
+* Bash
+* Slurm
 ```bash
 #!/bin/bash
 
@@ -109,12 +113,18 @@ OUT=/home/RESULTS.csv
   * SciPy
   * itertools
   * csv
-  * multiprocessing
-  * fuzzywuzzy (python-Levenshtein)
+  * Plotly
 * Bash
   * Slurm
 ---------------
-### Logistic Regression with Best Strings from Cartesian Product
+### Count Strings of Specific Lengths from Cartesian Product
+* pandas
+* scikit-learn
+* argparse
+* NumPy
+* SciPy
+* itertools
+* csv
 ```python3
 parser = argparse.ArgumentParser(description="Program to produce a model for things of differing lengths and Levenshtein distances.")
 
@@ -194,7 +204,9 @@ features = pd.DataFrame(
  'sample':samples,
  'Unique_seqs':unique_seqs})
 ```
-### Get Strings of Specified Lengths Using the Above Script
+### Get Counts of Strings of Specified Lengths Using the Above Script
+* Bash 
+* Slurm
 ```bash
 #!/bin/bash
 
@@ -218,4 +230,63 @@ SEQS=/home/model/seqs.csv
 THING=/home/model/thing.csv
 
 /usr/bin/time -v ./KMER_MODEL.py -p 30 -i $INPUT -s $SEQS -e $THING
+```
+### Run the Output from the Slurm Script in a Logistic Regression
+* Python
+* Plotly
+```python3
+# concat just the training portion of the sample key to the TCR df
+features = pd.read_csv('output.csv', low_memory=False)
+
+plot_feats = features.copy()
+encode1 = {True:'Positive', False:'Negative'}
+plot_feats['status'] = plot_feats['status'].map(encode1)
+
+# categorically encode
+encode2 = {True:1, False:0}
+features['status'] = features['status'].map(encode2)
+
+# plot the features
+fig = px.scatter(plot_feats, x='Uniques', y='Count', color='status')
+fig.write_image('scatter.png')
+
+# use sklearn's StandardScaler on the continuous features
+cols = ['thing_Count']
+feats = features[cols]
+scale = StandardScaler().fit(feats.values)
+feats = scale.transform(feats.values)
+features[cols] = feats
+
+features2 = features[['thing_Count', 'status']]
+
+df = features2
+target = 'status'
+
+X = df.drop(target, axis=1)
+y = df[target]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=df[target], random_state = 100, shuffle=True)
+
+# define models and parameters
+model = LogisticRegression()
+solvers = ['newton-cg', 'lbfgs', 'liblinear']
+penalty = ['l2']
+c_values = [100, 10, 1.0, 0.1, 0.01]
+# define grid search
+grid = dict(solver=solvers,penalty=penalty,C=c_values)
+cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+grid_search = GridSearchCV(estimator=model, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy',error_score=0)
+grid_result = grid_search.fit(X, y)
+# summarize results
+print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
+means = grid_result.cv_results_['mean_test_score']
+stds = grid_result.cv_results_['std_test_score']
+params = grid_result.cv_results_['params']
+for mean, stdev, param in zip(means, stds, params):
+    print("%f (%f) with: %r" % (mean, stdev, param))
+
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+y_pred_train = model.predict(X_train)
 ```
