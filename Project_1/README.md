@@ -1,5 +1,5 @@
-## Project 1 - Classifier identifying and analyzing potential causes of inaccuracy
-Languages and Tools:
+## Project 1 - Classifier identifying and analyzing potential inaccuracies
+**#### Languages and Tools:**
 * Python
   * pandas
   * NumPy
