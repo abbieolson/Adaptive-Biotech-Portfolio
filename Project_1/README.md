@@ -178,7 +178,7 @@ plt.ylabel('True Positive Rate')
 plt.xlabel('False Positive Rate')
 plt.savefig('rf_roc_auc.png')
 ```
-### Create Report
+### Write Report
 * HTML
 * Python
 ```html
