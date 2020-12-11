@@ -2,7 +2,7 @@
 #### Collection of projects from my externship at [Adaptive Biotechnologies](https://www.adaptivebiotech.com/).
 *Note: Variables have been changed and references to company IP have been omitted.*
 
-<img src="https://www.oxfordglobal.co.uk/immuno-series-uk/wp-content/uploads/sites/12/2020/03/Adaptive_Logo_Registered_PNG_5-11-15.png" width="50" height="25">
+<img src="https://www.oxfordglobal.co.uk/immuno-series-uk/wp-content/uploads/sites/12/2020/03/Adaptive_Logo_Registered_PNG_5-11-15.png" width="100" height="50">
 
 To satisfy the internship component of my MS in Bioinformatics from the University of Oregon, I have been working as an extern with Adaptive's Computational Biology group since March 2020. I work mainly with the Statistics and Algorithms subgroup and have collaborated on a number of proprietary projects in various computational disciplines (from machine learning to tool development). While much of the work I do is considered sensitive intellectual property, the following code snippets have been deemed acceptable for sharing.
 
