@@ -29,7 +29,7 @@ def find(sample):
         if re.findall("e[A-Z]+[0-9]+_", str(i)):
             ID.append(i.split('_')[0])
 
-        elif re.findall("redacted]", str(i)):
+        elif re.findall("redacted", str(i)):
             ID.append(i.split()[-1])
 
         elif re.findall("redacted", str(i)):
