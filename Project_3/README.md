@@ -196,9 +196,9 @@ def main():
                                           # pass if no match
                                           pass
                                 except TypeError:
-                                  pass
+                                    pass
                 else:
-                  pass
+                    pass
 
     # get headers for the "keep" sheet of the Excel file
     with open(args.col_path, 'r') as f:
