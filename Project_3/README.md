@@ -119,7 +119,7 @@ def main():
     parser.add_argument("-c", "--col_path", help="Path to .txt file containing relevant column headers (probably bleepblorp.txt).", required=True, type=str)
 
     # arguments that contain defaults and aren't required (chance they may change in the future, likely due to the Excel file)
-    parser.add_argument("-m_id", "--thing_id", help="Specify the bleep blorp column header from the thing files (likely 'sampleID').", default="sampleID",required=False, type=str)
+    parser.add_argument("-m_id", "--thing_id", help="Specify the bleep blorp column header from the thing files (likely 'thingID').", default="thingID",required=False, type=str)
     parser.add_argument("-m_seq", "--thing_seq", help="Specify the string sequence column header from the thing files.", default="bleep", required=False, type=str)
     parser.add_argument("-e_id", "--excel_id", help="Specify the bleep blorp column header from the Excel file.", default="bloop", required=False, type=str)
     parser.add_argument("-e_seq", "--excel_seq", help="Specify the string sequence column header from the Excel file.", default="blorp", required=False, type=str)
@@ -153,51 +153,51 @@ def main():
     out_with_date = file_date(args.out_file)
 
     # open matched file
-    with open(args.out_path + '/' + out_with_date, 'a+', newline='') as f_matched:
-        # initialize a writer for the matched rows between the excel sheet and thing files
-        writer_matched = csv.DictWriter(f_matched, fielstringmes=fields)
-        # write headers from the fields list for both files. files without certian fields will be written out as empty strings
-        writer_matched.writeheader()
+      with open(args.out_path + '/' + out_with_date, 'a+', newline='') as f_matched:
+          # initialize a writer for the matched rows between the excel sheet and thing files
+          writer_matched = csv.DictWriter(f_matched, fieldnames=fields)
+          # write headers from the fields list for both files. files without certian fields will be written out as empty strings
+          writer_matched.writeheader()
 
-        # iterate over each file in the globbed directory
-        for name in thing_files:
-            # open each file and search just the thingcolumn
-            with open(name, 'r+', newline='') as f_in1:
-                # reads in just the thingcolumn
-                ID_col = list(zip(*csv.reader(f_in1, delimiter= '\t')))[args.id_col]
-                if re.search(pattern, str(ID_col)):
-                    # if the thingis detected, open the entire file
-                    with open(name, 'r+', newline='') as f_in2:
-                        for line1 in csv.DictReader(f_in2, delimiter='\t'):
-                            # dict lookup seq key in the globbed thing files
-                            line1.update({'file_name':name})
-                            thing_file_seq = line1[args.thing_seq]
-                            # dict lookup samplekey in the globbed thing files
-                            thing_file_sample= line1[args.thing_id]
+          # iterate over each file in the globbed directory
+          for name in thing_files:
+              # open each file and search for IDs
+              with open(name, 'r+', newline='') as f_in1:
+                  # get just the ID columns
+                  ID_col = list(zip(*csv.reader(f_in1, delimiter= '\t')))[args.id_col]
+                  # sarch the ID column for IDs from the Excel sheet
+                  if re.search(pattern, str(ID_col)):
+                      # open all fields
+                      with open(name, 'r+', newline='') as f_in2:
+                          # convert each line to a dictionary
+                          for line1 in csv.DictReader(f_in2, delimiter='\t'):
+                              # if an ID is recognized in the line, iterate over it
+                              if re.search(pattern, str(line1)):
+                                  # add a field for the original thing file
+                                  line1.update({'file_name':name})
+                                  thing_file_seq = line1[args.thing_seq]
+                                  # dict lookup thingID key in the globbed thing files
+                                  thing_file_thingID = line1[args.thing_id]
 
-                            # for each line in the excel dictionary, each line of excel file is in records
-                            for line2 in excel_dict:
-                                # look for the search pattern in the excel sheet, if one of the bleep blorps is detected, continue
-                                if re.search(pattern, str(line2.values())):
-                                    try:
-                                        # check if the seq and exp columnsin the excel sheet are in the seq and samplecolumns from file
-                                        if (line2[args.excel_seq] == thing_file_seq and line2[args.excel_id] in thing_file_sampleID):
-                                            # merge the two dictionaries with the unpacking operator
-                                            line3 = {**line1, **line2}
-                                            # find any field headers that aren't already in the field list
-                                            for k in line3.keys():
-                                                if k not in fields:
-                                                    fields.append(k)
-                                            # write line to file if a match is found
-                                            writer_matched.writerow(line3)
-                                        else:
-                                            # pass if no match
-                                            pass
-                                    except TypeError:
-                                        pass
-                # pass over the file if it doesn't contain the IDs
-                else:
-                    pass
+                                  # for each line in the excel dictionary, each line of excel file is in records
+                                  for line2 in excel_dict:
+                                      # check if the seq and thing columnsin the excel sheet are in the seq and thingID columns from file
+                                      if (line2[args.excel_seq] == thing_file_seq and line2[args.excel_id] in thing_file_thingID):
+                                          # merge the two dictionaries
+                                          line3 = {**line1, **line2}
+                                          # find any field headers that aren't already in the field list
+                                          for k in line3.keys():
+                                              if k not in fields:
+                                                  fields.append(k)
+                                          # write line to file if a match is found
+                                          writer_matched.writerow(line3)
+                                      else:
+                                          # pass if no match
+                                          pass
+
+                  else:
+                      pass
+
 
     # get headers for the "keep" sheet of the Excel file
     with open(args.col_path, 'r') as f:
