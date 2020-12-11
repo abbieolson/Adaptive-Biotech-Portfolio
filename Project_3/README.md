@@ -198,7 +198,6 @@ def main():
                 else:
                     pass
 
-
     # get headers for the "keep" sheet of the Excel file
     with open(args.col_path, 'r') as f:
         header_list = [line.rstrip('\n') for line in f]
