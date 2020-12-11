@@ -255,11 +255,11 @@ if __name__ == "__main__":
 source deactivate
 source activate my_root
 
-MIRA_PATH=/home/thing_dir
+THING_PATH=/home/thing_dir
 EXCEL_PATH=/home/input_dir
 OUT_PATH=/home/out_path
 COLUMNS=/home/columns.txt
 OUT_FILE="OUT"
 
-/usr/bin/time -v ./THING.py -e .txt -c $COLUMNS -mp $MIRA_PATH -ep $EXCEL_PATH -op $OUT_PATH -of $OUT_FILE
+/usr/bin/time -v ./THING.py -e .txt -c $COLUMNS -mp $THING_PATH -ep $EXCEL_PATH -op $OUT_PATH -of $OUT_FILE
 ```
