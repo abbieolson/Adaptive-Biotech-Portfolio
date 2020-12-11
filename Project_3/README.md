@@ -9,6 +9,7 @@
   * re
   * glob
   * date
+  * argparse
 * Bash
   * Slurm
 ---------------
@@ -98,6 +99,7 @@ def write_excel(out_file, out_path, keep_df, extra_df):
 * NumPy
 * csv
 * re
+* argparse
 ```python3
 #!/usr/bin/env python3
 
@@ -244,7 +246,7 @@ if __name__ == "__main__":
 #SBATCH --output=slurm-%j-%x.out
 #SBATCH --nodes=1               ### Node count required for the job
 #SBATCH --ntasks=1             
-#SBATCH --time=25-00:00:00       ### Days-HH:MM:SS
+#SBATCH --time=25-00:00:00      ### Days-HH:MM:SS
 #SBATCH --cpus-per-task=40
 #SBATCH --mem-per-cpu=100
 #SBATCH --mail-user=email@email.com
