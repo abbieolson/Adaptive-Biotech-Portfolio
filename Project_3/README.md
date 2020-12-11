@@ -179,22 +179,24 @@ def main():
                                 # dict lookup thingID key in the globbed thing files
                                 thing_file_thingID = line1[args.thing_id]
 
-                                # for each line in the excel dictionary, each line of excel file is in records
-                                for line2 in excel_dict:
-                                    # check if the seq and thing columnsin the excel sheet are in the seq and thingID columns from file
-                                    if (line2[args.excel_seq] == thing_file_seq and line2[args.excel_id] in thing_file_thingID):
-                                        # merge the two dictionaries
-                                        line3 = {**line1, **line2}
-                                        # find any field headers that aren't already in the field list
-                                        for k in line3.keys():
-                                            if k not in fields:
-                                                fields.append(k)
-                                        # write line to file if a match is found
-                                        writer_matched.writerow(line3)
-                                    else:
-                                        # pass if no match
-                                        pass
-
+                                try:
+                                  # for each line in the excel dictionary, each line of excel file is in records
+                                  for line2 in excel_dict:
+                                      # check if the seq and thing columnsin the excel sheet are in the seq and thingID columns from file
+                                      if (line2[args.excel_seq] == thing_file_seq and line2[args.excel_id] in thing_file_thingID):
+                                          # merge the two dictionaries
+                                          line3 = {**line1, **line2}
+                                          # find any field headers that aren't already in the field list
+                                          for k in line3.keys():
+                                              if k not in fields:
+                                                  fields.append(k)
+                                          # write line to file if a match is found
+                                          writer_matched.writerow(line3)
+                                      else:
+                                          # pass if no match
+                                          pass
+                                except TypeError:
+                                    pass
                 else:
                     pass
 
