@@ -1,5 +1,5 @@
 ## Recent Projects
-Collection of projects from my externship at Adaptive Biotechnologies(https://www.adaptivebiotech.com/).
+#### Collection of projects from my externship at [Adaptive Biotechnologies](https://www.adaptivebiotech.com/).
 
 *Note: Variables have been changed and references to company IP have been omitted.*
 
