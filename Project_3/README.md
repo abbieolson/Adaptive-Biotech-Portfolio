@@ -43,7 +43,7 @@ def find(sample):
 
 def excel_to_df(excel_path):
     '''Converts manually entered Excel sheet to a dictionary.'''
-    thing_excel = pd.read_excel(excel_path, sheet_name='all') # read full excel file in
+    mira_excel = pd.read_excel(excel_path, sheet_name='all', engine='openpyxl') # read full excel file in
     thing_excel = thing_excel.sort_index(ascending=False) # reverse order so that the newest things are first
     thing_excel['exp'] = thing_excel['thing exp']
     thing_excel = thing_excel.drop('thing exp', axis = 1)
@@ -153,7 +153,7 @@ def main():
     out_with_date = file_date(args.out_file)
 
     # open matched file
-    with open(args.out_path + '/' + out_with_date, 'a+', newline='') as f_matched:
+    with open(args.out_path + '/' + out_with_date, 'w', newline='') as f_matched:
         # initialize a writer for the matched rows between the excel sheet and thing files
         writer_matched = csv.DictWriter(f_matched, fieldnames=fields)
         # write headers from the fields list for both files. files without certian fields will be written out as empty strings
@@ -162,13 +162,13 @@ def main():
         # iterate over each file in the globbed directory
         for name in thing_files:
             # open each file and search for IDs
-            with open(name, 'r+', newline='') as f_in1:
+            with open(name, 'r', newline='') as f_in1:
                 # get just the ID columns
                 ID_col = list(zip(*csv.reader(f_in1, delimiter= '\t')))[args.id_col]
                 # sarch the ID column for IDs from the Excel sheet
                 if re.search(pattern, str(ID_col)):
                     # open all fields
-                    with open(name, 'r+', newline='') as f_in2:
+                    with open(name, 'r', newline='') as f_in2:
                         # convert each line to a dictionary
                         for line1 in csv.DictReader(f_in2, delimiter='\t'):
                             # if an ID is recognized in the line, iterate over it
