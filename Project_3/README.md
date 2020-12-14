@@ -43,7 +43,7 @@ def find(sample):
 
 def excel_to_df(excel_path):
     '''Converts manually entered Excel sheet to a dictionary.'''
-    mira_excel = pd.read_excel(excel_path, sheet_name='all', engine='openpyxl') # read full excel file in
+    thing_excel = pd.read_excel(excel_path, sheet_name='all', engine='openpyxl') # read full excel file in
     thing_excel = thing_excel.sort_index(ascending=False) # reverse order so that the newest things are first
     thing_excel['exp'] = thing_excel['thing exp']
     thing_excel = thing_excel.drop('thing exp', axis = 1)
