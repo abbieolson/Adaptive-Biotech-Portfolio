@@ -44,7 +44,7 @@ def find(sample):
 def excel_to_df(excel_path):
     '''Converts thing Excel sheet to a dictionary.'''
     thing_excels = pd.read_excel(excel_path, sheet_name=None, engine='openpyxl')
-    thing_excels['all']['experiment'] = thing_excels['all']['thing experiment']
+    thing_excels['all']['things'] = thing_excels['all']['thing things']
     thing_excels['all'] = thing_excels['all'].drop('thing experiment', axis = 1)
     thing_excel = thing_excels['all']
     return thing_excel
