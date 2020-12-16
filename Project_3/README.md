@@ -42,11 +42,11 @@ def find(sample):
     return ID
 
 def excel_to_df(excel_path):
-    '''Converts manually entered Excel sheet to a dictionary.'''
-    thing_excels = pd.read_excel(excel_path, sheet_name=None, engine='openpyxl') # read full excel file in
-    thing_excel = pd.concat(thing_excels, ignore_index=True, sort=False)
-    thing_excel['exp'] = thing_excel['thing exp']
-    thing_excel = thing_excel.drop('thing exp', axis = 1)
+    '''Converts thing Excel sheet to a dictionary.'''
+    thing_excels = pd.read_excel(excel_path, sheet_name=None, engine='openpyxl')
+    thing_excels['all']['experiment'] = thing_excels['all']['thing experiment']
+    thing_excels['all'] = thing_excels['all'].drop('thing experiment', axis = 1)
+    thing_excel = thing_excels['all']
     return thing_excel
 
 def glob_files(thing_path, file_ext, thing_files, fields):
@@ -111,7 +111,6 @@ import argparse
 def main():
     '''Program to merge a thing excel sheet with thing out files.'''
     parser = argparse.ArgumentParser(description="Program to merge lines from thing output files with the thing Excel sheet based on sequence and other thing and string sequence (enter '-h' after the script name to see all flags).")
-    parser.add_argument("-e", "--extension", help="File extension of the desired files (likely .txt).", required=True, type=str)
     parser.add_argument("-mp", "--thing_path", help="Path to the root directory containing the output files from the thing assay (provide just the path).", required=True, type=str)
     parser.add_argument("-ep", "--excel_path", help="Path to the excel sheet (provide both the path and the file).", required=True, type=str)
     parser.add_argument("-op", "--out_path", help="Path to eventual merged file (provide just the path).", required=True, type=str)
@@ -119,6 +118,7 @@ def main():
     parser.add_argument("-c", "--col_path", help="Path to .txt file containing relevant column headers (probably bleepblorp.txt).", required=True, type=str)
 
     # arguments that contain defaults and aren't required (chance they may change in the future, likely due to the Excel file)
+    parser.add_argument("-e", "--extension", help="File extension of the desired files (likely .txt).", default=".txt", required=False, type=str)
     parser.add_argument("-m_id", "--thing_id", help="Specify the bleep blorp column header from the thing files (likely 'thingID').", default="thingID",required=False, type=str)
     parser.add_argument("-m_seq", "--thing_seq", help="Specify the string sequence column header from the thing files.", default="bleep", required=False, type=str)
     parser.add_argument("-e_id", "--excel_id", help="Specify the bleep blorp column header from the Excel file.", default="bloop", required=False, type=str)
@@ -262,5 +262,5 @@ OUT_PATH=/home/out_path
 COLUMNS=/home/columns.txt
 OUT_FILE="OUT"
 
-/usr/bin/time -v ./THING.py -e .txt -c $COLUMNS -mp $THING_PATH -ep $EXCEL_PATH -op $OUT_PATH -of $OUT_FILE
+/usr/bin/time -v ./THING.py -c $COLUMNS -mp $THING_PATH -ep $EXCEL_PATH -op $OUT_PATH -of $OUT_FILE
 ```
