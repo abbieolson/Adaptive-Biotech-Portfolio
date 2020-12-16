@@ -143,6 +143,10 @@ def main():
     # list to hold thing file names
     thing_files = []
 
+    # add fields from excel sheet to fields list
+    for col in excel_df:
+        fields.append(col)
+
     # glob the files in the current directory and identify all unique fields
     glob_files(args.thing_path, args.extension, thing_files, fields)
 
@@ -186,10 +190,6 @@ def main():
                                       if (line2[args.excel_seq] == thing_file_seq and line2[args.excel_id] in thing_file_thingID):
                                           # merge the two dictionaries
                                           line3 = {**line1, **line2}
-                                          # find any field headers that aren't already in the field list
-                                          for k in line3.keys():
-                                              if k not in fields:
-                                                  fields.append(k)
                                           # write line to file if a match is found
                                           writer_matched.writerow(line3)
                                       else:
