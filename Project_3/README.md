@@ -21,11 +21,11 @@
 * date
 * os
 ```python3
-def find(sample):
+def find(thing):
     '''Function to extract IDs that were entered into the spreadsheet inconsistently or improperly.'''
-    thing= re.findall("e[A-Z]+[0-9]+", str(sample))
+    thing= re.findall("e[A-Z]+[0-9]+", str(thing))
 
-    for i in sample:
+    for i in thing:
         if re.findall("e[A-Z]+[0-9]+_", str(i)):
             ID.append(i.split('_')[0])
 
@@ -45,7 +45,7 @@ def excel_to_df(excel_path):
     '''Converts thing Excel sheet to a dictionary.'''
     thing_excels = pd.read_excel(excel_path, sheet_name=None, engine='openpyxl')
     thing_excels['all']['things'] = thing_excels['all']['thing things']
-    thing_excels['all'] = thing_excels['all'].drop('thing experiment', axis = 1)
+    thing_excels['all'] = thing_excels['all'].drop('thing thingy', axis = 1)
     thing_excel = thing_excels['all']
     return thing_excel
 
@@ -79,17 +79,18 @@ def glob_files(thing_path, file_ext, thing_files, fields):
             break
             raise Exception("Looks like you don't have access to at least one file in this directory. Double-check your permissions settings.")
 
-def file_date(out_file):
+def file_date(out_file, name):
     '''Function to add the date to the output of the merge.'''
-    date_of_file = out_file + date.today().strftime('_%Y_%m_%d') + '.csv'
+    date_of_file = out_file + '_' + f'{name}' + date.today().strftime('_%Y_%m_%d') + '.csv'
     return date_of_file
 
-def write_excel(out_file, out_path, keep_df, extra_df):
+def write_excel(out_file, out_path, keep_df, extra_df, excel_data):
     '''Function for writing the merged data to an Excel file.'''
     date_file = out_file + date.today().strftime('_%Y_%m_%d') + '.xlsx'
     writer = pd.ExcelWriter(out_path + '/' + date_file, engine='xlsxwriter')
-    keep_df.to_excel(writer, sheet_name='thing_COLS')
+    keep_df.to_excel(writer, sheet_name='THING_COLS')
     extra_df.to_excel(writer, sheet_name='EXTRA_COLS')
+    excel_data.to_excel(writer, sheet_name='UNMATCHED')
     writer.save()
 ```
 
@@ -123,7 +124,7 @@ def main():
     parser.add_argument("-m_seq", "--thing_seq", help="Specify the string sequence column header from the thing files.", default="bleep", required=False, type=str)
     parser.add_argument("-e_id", "--excel_id", help="Specify the bleep blorp column header from the Excel file.", default="bloop", required=False, type=str)
     parser.add_argument("-e_seq", "--excel_seq", help="Specify the string sequence column header from the Excel file.", default="blorp", required=False, type=str)
-    parser.add_argument("-id_c", "--id_col", help="Number of the thing file column where sample IDs are located.", default=0, required=False, type=int)
+    parser.add_argument("-id_c", "--id_col", help="Number of the thing file column where thing IDs are located.", default=0, required=False, type=int)
     args = parser.parse_args()
 
     # convert the Excel sheet to a dictionary
@@ -132,6 +133,11 @@ def main():
     excel_dict = excel_df.to_dict('records')
     # get list of unique bleep blorps
     exps_excel = list(excel_df['exp'].unique())
+
+    # get fieldnames from excel sheet
+    excel_fields = []
+    for field in thing_excel:
+        excel_fields.append(field)
 
     # processed list of bleep blorps
     IDs = find_IDs(exps_excel)
@@ -153,15 +159,18 @@ def main():
     # add file path field
     fields.append('file_name')
 
-    # add date to the output file
-    out_with_date = file_date(args.out_file)
+    # add date to the output file */
+    out_matched = file_date(args.out_file, 'matched')
+    out_unmatched = file_date(args.out_file, 'unmatched_intermediate')
 
     # open matched file
-    with open(args.out_path + '/' + out_with_date, 'w', newline='') as f_matched:
+    with open(args.out_path + '/' + out_matched, 'w', newline='') as f_matched, open(args.out_path + '/' + out_unmatched, 'w', newline='') as f_unmatched:
         # initialize a writer for the matched rows between the excel sheet and thing files
         writer_matched = csv.DictWriter(f_matched, fieldnames=fields)
+        writer_unmatched = csv.DictWriter(f_unmatched, fieldnames=excel_fields)
         # write headers from the fields list for both files. files without certian fields will be written out as empty strings
         writer_matched.writeheader()
+        writer_unmatched.writeheader()
 
         # iterate over each file in the globbed directory
         for name in thing_files:
@@ -184,21 +193,38 @@ def main():
                                 thing_file_thingID = line1[args.thing_id]
 
                                 try:
-                                  # for each line in the excel dictionary, each line of excel file is in records
-                                  for line2 in excel_dict:
-                                      # check if the seq and thing columnsin the excel sheet are in the seq and thingID columns from file
-                                      if (line2[args.excel_seq] == thing_file_seq and line2[args.excel_id] in thing_file_thingID):
-                                          # merge the two dictionaries
-                                          line3 = {**line1, **line2}
-                                          # write line to file if a match is found
-                                          writer_matched.writerow(line3)
-                                      else:
-                                          # pass if no match
-                                          pass
+                                    # for each line in the excel dictionary, each line of excel file is in records
+                                    for line2 in excel_dict:
+                                        # check if the seq and thingy columnsin the excel sheet are in the seq and thingID columns from file
+                                        if (line2[args.excel_seq] == thing_file_seq and line2[args.excel_id] in thing_file_thingID):
+                                            # merge the two dictionaries
+                                            line3 = {**line1, **line2}
+                                            # write line to file if a match is found
+                                            writer_matched.writerow(line3)
+                                        else:
+                                            # write to intermediate file
+                                            writer_unmatched.writerow(line2)
                                 except TypeError:
                                     pass
                 else:
                     pass
+
+    # name a new unmatched file
+    out_excel_unmatched = file_date(args.out_file, 'UNMATCHED')
+
+    # iterate over the intermediate file and only write lines that aren't duplicates
+    excel_seen = set()
+    with open(args.out_path + '/' + out_excel_unmatched, 'w', newline='') as excel_unmatched:
+        for line in open(args.out_path + '/' + out_unmatched, 'r'):
+            if line not in excel_seen:
+                excel_unmatched.write(line)
+                excel_seen.add(line)
+    # remove intermediate file
+    os.remove(args.out_path + '/' + out_unmatched)
+
+    # get the unmatched excel data
+    excel_data = pd.read_csv(args.out_path + '/' + out_excel_unmatched, low_memory=False, names=excel_fields)
+    excel_data = excel_data.drop(0)
 
     # get headers for the "keep" sheet of the Excel file
     with open(args.col_path, 'r') as f:
@@ -207,14 +233,14 @@ def main():
 
     # get all headers from the merge, add them to a list
     thing_headers = []
-    with open(args.out_path + '/' + out_with_date, newline='') as f:
+    with open(args.out_path + '/' + out_matched, newline='') as f:
       reader = csv.reader(f)
       row1 = next(reader)
     for col in row1:
         thing_headers.append(col)
 
     # read in df
-    thing_data = pd.read_csv(args.out_path + '/' + out_with_date, low_memory=False, names=thing_headers)
+    thing_data = pd.read_csv(args.out_path + '/' + out_matched, low_memory=False, names=thing_headers)
     thing_data = thing_data.drop(0)
 
     # add columns to the dataframe if they don't exist
@@ -231,7 +257,7 @@ def main():
     extra = thing_copy.drop(header_list, axis=1)
 
     # write final Excel sheet
-    write_excel(args.out_file, args.out_path, keep, extra)
+    write_excel(args.out_file, args.out_path, keep, extra, excel_data)
 
 if __name__ == "__main__":
     main()
