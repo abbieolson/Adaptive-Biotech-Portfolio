@@ -159,7 +159,7 @@ def main():
     # add file path field
     fields.append('file_name')
 
-    # add date to the output file */
+    # add date to the output file
     out_matched = file_date(args.out_file, 'matched')
     out_unmatched = file_date(args.out_file, 'unmatched_intermediate')
 
