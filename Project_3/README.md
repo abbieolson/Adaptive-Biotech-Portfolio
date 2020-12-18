@@ -79,18 +79,18 @@ def glob_files(thing_path, file_ext, thing_files, fields):
             break
             raise Exception("Looks like you don't have access to at least one file in this directory. Double-check your permissions settings.")
 
-def file_date(out_file, name):
+def file_date(out_file):
     '''Function to add the date to the output of the merge.'''
-    date_of_file = out_file + '_' + f'{name}' + date.today().strftime('_%Y_%m_%d') + '.csv'
+    date_of_file = out_file + date.today().strftime('_%Y_%m_%d') + '.csv'
     return date_of_file
 
-def write_excel(out_file, out_path, keep_df, extra_df, excel_data):
+def write_excel(out_file, out_path, keep_df, extra_df, unmatched):
     '''Function for writing the merged data to an Excel file.'''
     date_file = out_file + date.today().strftime('_%Y_%m_%d') + '.xlsx'
     writer = pd.ExcelWriter(out_path + '/' + date_file, engine='xlsxwriter')
     keep_df.to_excel(writer, sheet_name='THING_COLS')
     extra_df.to_excel(writer, sheet_name='EXTRA_COLS')
-    excel_data.to_excel(writer, sheet_name='UNMATCHED')
+    unmatched.to_excel(writer, sheet_name='UNMATCHED')
     writer.save()
 ```
 
@@ -125,6 +125,7 @@ def main():
     parser.add_argument("-e_id", "--excel_id", help="Specify the bleep blorp column header from the Excel file.", default="bloop", required=False, type=str)
     parser.add_argument("-e_seq", "--excel_seq", help="Specify the string sequence column header from the Excel file.", default="blorp", required=False, type=str)
     parser.add_argument("-id_c", "--id_col", help="Number of the thing file column where thing IDs are located.", default=0, required=False, type=int)
+    parser.add_argument("-i", "--index", help="Number of the thing file column where indices are located (probably 1).", default=1, required=False, type=int)
     args = parser.parse_args()
 
     # convert the Excel sheet to a dictionary
@@ -149,10 +150,6 @@ def main():
     # list to hold thing file names
     thing_files = []
 
-    # add fields from excel sheet to fields list
-    for col in excel_df:
-        fields.append(col)
-
     # glob the files in the current directory and identify all unique fields
     glob_files(args.thing_path, args.extension, thing_files, fields)
 
@@ -160,17 +157,14 @@ def main():
     fields.append('file_name')
 
     # add date to the output file
-    out_matched = file_date(args.out_file, 'matched')
-    out_unmatched = file_date(args.out_file, 'unmatched_intermediate')
+    out_matched = file_date(args.out_file)
 
     # open matched file
-    with open(args.out_path + '/' + out_matched, 'w', newline='') as f_matched, open(args.out_path + '/' + out_unmatched, 'w', newline='') as f_unmatched:
+    with open(args.out_path + '/' + out_matched, 'w', newline='') as f_matched:
         # initialize a writer for the matched rows between the excel sheet and thing files
         writer_matched = csv.DictWriter(f_matched, fieldnames=fields)
-        writer_unmatched = csv.DictWriter(f_unmatched, fieldnames=excel_fields)
         # write headers from the fields list for both files. files without certian fields will be written out as empty strings
         writer_matched.writeheader()
-        writer_unmatched.writeheader()
 
         # iterate over each file in the globbed directory
         for name in thing_files:
@@ -202,29 +196,19 @@ def main():
                                             # write line to file if a match is found
                                             writer_matched.writerow(line3)
                                         else:
-                                            # write to intermediate file
-                                            writer_unmatched.writerow(line2)
+                                            pass
                                 except TypeError:
                                     pass
                 else:
                     pass
 
-    # name a new unmatched file
-    out_excel_unmatched = file_date(args.out_file, 'UNMATCHED')
+    # open matched file and get matched indices
+    with open(args.out_path + '/' + out_matched, 'r', newline='') as f_matched:
+        index = list(zip(*csv.reader(f_matched, delimiter= ',')))[args.index]
+        index = index[1:]
 
-    # iterate over the intermediate file and only write lines that aren't duplicates
-    excel_seen = set()
-    with open(args.out_path + '/' + out_excel_unmatched, 'w', newline='') as excel_unmatched:
-        for line in open(args.out_path + '/' + out_unmatched, 'r'):
-            if line not in excel_seen:
-                excel_unmatched.write(line)
-                excel_seen.add(line)
-    # remove intermediate file
-    os.remove(args.out_path + '/' + out_unmatched)
-
-    # get the unmatched excel data
-    excel_data = pd.read_csv(args.out_path + '/' + out_excel_unmatched, low_memory=False, names=excel_fields)
-    excel_data = excel_data.drop(0)
+    # subset excel sheet by indices that didn't occur (ie unmatched)
+    unmatched = excel_df[~excel_df['index'].isin(index)]
 
     # get headers for the "keep" sheet of the Excel file
     with open(args.col_path, 'r') as f:
@@ -257,7 +241,7 @@ def main():
     extra = thing_copy.drop(header_list, axis=1)
 
     # write final Excel sheet
-    write_excel(args.out_file, args.out_path, keep, extra, excel_data)
+    write_excel(args.out_file, args.out_path, keep, extra, unmatched)
 
 if __name__ == "__main__":
     main()
