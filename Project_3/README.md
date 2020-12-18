@@ -125,7 +125,7 @@ def main():
     parser.add_argument("-e_id", "--excel_id", help="Specify the bleep blorp column header from the Excel file.", default="bloop", required=False, type=str)
     parser.add_argument("-e_seq", "--excel_seq", help="Specify the string sequence column header from the Excel file.", default="blorp", required=False, type=str)
     parser.add_argument("-id_c", "--id_col", help="Number of the thing file column where thing IDs are located.", default=0, required=False, type=int)
-    parser.add_argument("-i", "--index", help="Number of the thing file column where indices are located (probably 1).", default=1, required=False, type=int)
+    parser.add_argument("-i", "--index", help="Number of the thing file column where indices are located (probably 0).", default=0, required=False, type=int)
     args = parser.parse_args()
 
     # convert the Excel sheet to a dictionary
