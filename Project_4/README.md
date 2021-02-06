@@ -1,6 +1,6 @@
-## Project 3 - Tool to identify outputs between similar runs of a clinical test
+## Project 4 - Tool to identify outputs between similar runs of a clinical test
 
-#### *Languages and Tools: Part I*
+#### *Languages and Tools*
 * Python
   * pandas
   * NumPy
@@ -26,15 +26,15 @@ def extend_pad(l, n, pad=0):
 def get_df(dir):
     '''Function to get dataframe'''
 
-    all_files = glob.glob(dir + "/*MET97*_MET82*")
+    all_files = glob.glob(dir + "/*thing*_thing*")
 
     li = []
     for fi in all_files:
         df = pd.read_csv(fi,  sep='\t', skiprows=21, low_memory=False)
         # add the file name as a new column
-        df['replicate'] = os.path.basename(fi)
-        # extract just the replicate name
-        df['replicate'] = df['replicate'].str.split('_').str[5]
+        df['thing'] = os.path.basename(fi)
+        # extract just the thing name
+        df['thing'] = df['thing'].str.split('_').str[5]
         li.append(df)
 
     # concatenate into one large dataframe
@@ -43,17 +43,17 @@ def get_df(dir):
 
 def get_calculated_df(df):
     '''Function to get dataframe for coefficient of varation plot'''
-    # split the dataframe into individual dfs by clone (nucleotide sequence)
-    dfs = [x for _, x in df.groupby('nucleotide')]
+    # split the dataframe into individual dfs by clone (thing sequence)
+    dfs = [x for _, x in df.groupby('thing')]
 
-    replicate_list = []
+    thing_list = []
     input_list = []
 
     for i in range(len(dfs)):
-        # add the input template counts of the technical replicates where the clone is identified to a list
+        # add the input template counts of the technical things where the clone is identified to a list
         input_list.append(dfs[i]['inputTemplateEstimate'].to_list())
 
-    # if a replicate doesn't contain a clone, just add a count of 0
+    # if a thing doesn't contain a clone, just add a count of 0
     for i in input_list:
         extend_pad(i, 4)
 
@@ -67,7 +67,6 @@ def get_calculated_df(df):
     {'CV':CV,
      'mean':np.log10(mean)})
     return calc_df
-
 
 def df_crossjoin(df1, df2, **kwargs):
     '''Cross join (cartesian product) between two dataframes.'''
@@ -119,7 +118,7 @@ def main():
 
     args = parser.parse_args()
 
-    # get summary statistics for every replicate
+    # get summary statistics for every thing
     filenames = []
     lines = []
     splitted = []
@@ -132,10 +131,10 @@ def main():
         if FRAC in name:
             filenames.append(name)
 
-    # add the eventual column header to the filename 'replicate__'
+    # add the eventual column header to the filename 'thing__'
     for name in filenames:
         with gzip.open(name, 'rt', newline='') as f_in:
-            lines.append('replicate__' + name)
+            lines.append('thing__' + name)
             for i in range(N):
                 line = next(f_in).strip()
                 line = line[1:].replace('=', '__')
@@ -165,20 +164,20 @@ def main():
 
         # fill any None types with NaN and eventually with 0
         dfs[i] = dfs[i].fillna(value=np.nan)
-        dfs[i]['replicate'] = dfs[i]['replicate'].str.extract(r'^(?:[^_]+_){5}([^. ]+)', expand=True)
+        dfs[i]['thing'] = dfs[i]['thing'].str.extract(r'^(?:[^_]+_){5}([^. ]+)', expand=True)
         dfs[i] = dfs[i].replace('', 0).replace(np.nan, 0).replace('N/A', 0)
 
     # concatenate all individual dataframes
     merged = pd.concat(dfs)
 
     # identify specific donors in the concatenated dataframe
-    clonality_df = merged[merged['replicate'].str.contains('Donor', na=False)]
+    thing_df = merged[merged['thing'].str.contains('Donor', na=False)]
 
     # create a specific donor column
-    clonality_df['Donor'] = clonality_df['replicate'].str.rsplit('_', 1, expand=True).drop(0, 1)
+    thing_df['Donor'] = thing_df['thing'].str.rsplit('_', 1, expand=True).drop(0, 1)
 
     # split the concatenated dataframe into dataframes by donor
-    clon_dfs = [x for _, x in clonality_df.groupby('Donor')]
+    clon_dfs = [x for _, x in thing_df.groupby('Donor')]
 
     # perform an SQL style crossjoin on each dataframe
     # prepare the dataframes for the differential abundance algorithm
@@ -186,14 +185,14 @@ def main():
     for i in range(len(clon_dfs)):
         count += 1
         clon_dfs[i]['flowcell'] = flow_list[i]
-        clon_dfs[i] = clon_dfs[i][['replicate', 'flowcell']]
+        clon_dfs[i] = clon_dfs[i][['thing', 'flowcell']]
         clon_dfs[i] = df_crossjoin(clon_dfs[i], clon_dfs[i].copy())
-        clon_dfs[i] = clon_dfs[i][clon_dfs[i]['replicate_x'] != clon_dfs[i]['replicate_y']]
-        clon_dfs[i].insert(0, 'comparison', clon_dfs[i]['replicate_x'] + '__' + clon_dfs[i]['replicate_y'])
+        clon_dfs[i] = clon_dfs[i][clon_dfs[i]['thing_x'] != clon_dfs[i]['thing_y']]
+        clon_dfs[i].insert(0, 'comparison', clon_dfs[i]['thing_x'] + '__' + clon_dfs[i]['thing_y'])
         clon_dfs[i].rename(columns={'old_col':'new_col',
-                           'replicate_x':'sample 1',
+                           'thing_x':'sample 1',
                            'flowcell_x':'flowcell 1',
-                           'replicate_y':'sample 2',
+                           'thing_y':'sample 2',
                            'flowcell_y':'flowcell 2'}, inplace=True)
         clon_dfs[i].reset_index(drop=True, inplace=True)
         clon_dfs[i] = clon_dfs[i][~clon_dfs[i].index.isin(using_npsort(clon_dfs[i][['sample 1', 'sample 2']]).index)]
@@ -232,71 +231,71 @@ OUT_PATH=/home/dna.corp.adaptivebiotech.com/aolson/CARTRIDGE_PROJ/OUT
 ### Various plot scripts
 
 ```python3
-alt = clonality_df[clonality_df['replicate'].str.contains('AltReagent')]
-alt = alt[~alt['replicate'].str.contains('FINA')]
+alt = thing_df[thing_df['thing'].str.contains('AltReagent')]
+alt = alt[~alt['thing'].str.contains('FINA')]
 
-pcr = clonality_df[clonality_df['replicate'].str.contains('MET97*_|QFPCR')]
-pcr = pcr[~pcr['replicate'].str.contains('FINA')]
+pcr = thing_df[thing_df['thing'].str.contains('thing*_|QFPCR')]
+pcr = pcr[~pcr['thing'].str.contains('FINA')]
 
-met = clonality_df[clonality_df['replicate'].str.contains('MET97*_|MET82')]
-met = met[~met['replicate'].str.contains('FINA')]
+thing = thing_df[thing_df['thing'].str.contains('thing*_|thing')]
+thing = thing[~thing['thing'].str.contains('FINA')]
 
-fin = clonality_df[clonality_df['replicate'].str.contains('FINA')]
+thing = thing_df[thing_df['thing'].str.contains('FINA')]
 
-clonality = pd.concat([alt.assign(dataset='AltReagent'),
+thing = pd.concat([alt.assign(dataset='AltReagent'),
            pcr.assign(dataset='QFPCR'),
-           met.assign(dataset='MET82'),
-           fin.assign(dataset='FINA')])
+           thing.assign(dataset='thing'),
+           thing.assign(dataset='FINA')])
 
-clonality['clonality'] = pd.to_numeric(clonality['clonality'])
+thing['thing'] = pd.to_numeric(thing['thing'])
 
-clon_dfs_plot = [x for _, x in clonality.groupby('Donor')]
+clon_dfs_plot = [x for _, x in thing.groupby('Donor')]
 
 ################################################
 
-# box plots for each set of replicates by donor
-fig1 = px.box(clon_dfs_plot[0], x="dataset", y="clonality", color="dataset", points="all", labels={"dataset": "replicate"},
+# box plots for each set of things by donor
+fig1 = px.box(clon_dfs_plot[0], x="dataset", y="thing", color="dataset", points="all", labels={"dataset": "thing"},
              title="Donor 1: Clonlity from Replicates")
-fig1.write_image(FIGS + '/' + 'donor1_clonality.png')
+fig1.write_image(FIGS + '/' + 'donor1_thing.png')
 fig1.show()
 
-fig2 = px.box(clon_dfs_plot[1], x="dataset", y="clonality", color="dataset", points="all", labels={"dataset": "replicate"},
+fig2 = px.box(clon_dfs_plot[1], x="dataset", y="thing", color="dataset", points="all", labels={"dataset": "thing"},
              title="Donor 2: Clonlity from Replicates")
-fig2.write_image(FIGS + '/' + 'donor2_clonality.png')
+fig2.write_image(FIGS + '/' + 'donor2_thing.png')
 fig2.show()
 
-fig3 = px.box(clon_dfs_plot[2], x="dataset", y="clonality", color="dataset", points="all", labels={"dataset": "replicate"},
+fig3 = px.box(clon_dfs_plot[2], x="dataset", y="thing", color="dataset", points="all", labels={"dataset": "thing"},
              title="Donor 3: Clonlity from Replicates")
-fig3.write_image(FIGS + '/' + 'donor3_clonality.png')
+fig3.write_image(FIGS + '/' + 'donor3_thing.png')
 fig3.show()
 
-fig4 = px.box(clon_dfs_plot[3], x="dataset", y="clonality", color="dataset", points="all", labels={"dataset": "replicate"},
+fig4 = px.box(clon_dfs_plot[3], x="dataset", y="thing", color="dataset", points="all", labels={"dataset": "thing"},
              title="Donor 4: Clonlity from Replicates")
-fig4.write_image(FIGS + '/' + 'donor4_clonality.png')
+fig4.write_image(FIGS + '/' + 'donor4_thing.png')
 fig4.show()
 
 ###############################################
 
 # Plots for Deliverable 1 - CLonality per Donor
-don1_clonality = clonality_df[clonality_df['replicate'].str.contains('Donor1', na=False)]
-don2_clonality = clonality_df[clonality_df['replicate'].str.contains('Donor2', na=False)]
-don3_clonality = clonality_df[clonality_df['replicate'].str.contains('Donor3', na=False)]
-don4_clonality = clonality_df[clonality_df['replicate'].str.contains('Donor4', na=False)]
+don1_thing = thing_df[thing_df['thing'].str.contains('Donor1', na=False)]
+don2_thing = thing_df[thing_df['thing'].str.contains('Donor2', na=False)]
+don3_thing = thing_df[thing_df['thing'].str.contains('Donor3', na=False)]
+don4_thing = thing_df[thing_df['thing'].str.contains('Donor4', na=False)]
 
-fig1 = px.bar(don1_clonality, x="replicate", y="clonality", color="replicate", title="Clonality per Replicate (Donor 1)", width=1400, height=700)
-# fig1.write_image('/Users/aolsen/IMMUNOSEQ/figs/donor1_clonality.png')
+fig1 = px.bar(don1_thing, x="thing", y="thing", color="thing", title="Clonality per Replicate (Donor 1)", width=1400, height=700)
+# fig1.write_image('/Users/aolsen/IMMUNOSEQ/figs/donor1_thing.png')
 fig1.show()
 
-fig2 = px.bar(don2_clonality, x="replicate", y="clonality", color="replicate", title="Clonality per Replicate (Donor 2)", width=1400, height=700)
-# fig2.write_image('/Users/aolsen/IMMUNOSEQ/figs/donor2_clonality.png')
+fig2 = px.bar(don2_thing, x="thing", y="thing", color="thing", title="Clonality per Replicate (Donor 2)", width=1400, height=700)
+# fig2.write_image('/Users/aolsen/IMMUNOSEQ/figs/donor2_thing.png')
 fig2.show()
 
-fig3 = px.bar(don3_clonality, x="replicate", y="clonality", color="replicate", title="Clonality per Replicate (Donor 3)", width=1400, height=700)
-# fig3.write_image('/Users/aolsen/IMMUNOSEQ/figs/donor3_clonality.png')
+fig3 = px.bar(don3_thing, x="thing", y="thing", color="thing", title="Clonality per Replicate (Donor 3)", width=1400, height=700)
+# fig3.write_image('/Users/aolsen/IMMUNOSEQ/figs/donor3_thing.png')
 fig3.show()
 
-fig4 = px.bar(don4_clonality, x="replicate", y="clonality", color="replicate", title="Clonality per Replicate (Donor 4)", width=1400, height=700)
-# fig4.write_image('/Users/aolsen/IMMUNOSEQ/figs/donor4_clonality.png')
+fig4 = px.bar(don4_thing, x="thing", y="thing", color="thing", title="Clonality per Replicate (Donor 4)", width=1400, height=700)
+# fig4.write_image('/Users/aolsen/IMMUNOSEQ/figs/donor4_thing.png')
 fig4.show()
 
 #################################################
@@ -304,32 +303,32 @@ fig4.show()
 # Precision plot from full data per donor
 PATH = '/Users/aolsen/IMMUNOSEQ/cartridge/'
 
-donor1 = PATH + 'donor1/rd.Human.TCRB-v4b.nextseq.156x12x0.vblocks.ultralight.rev8/'
-donor2 = PATH + 'donor2/rd.Human.TCRB-v4b.nextseq.156x12x0.vblocks.ultralight.rev8/'
-donor3 = PATH + 'donor3/rd.Human.TCRB-v4b.nextseq.156x12x0.vblocks.ultralight.rev8/'
-donor4 = PATH + 'donor4/rd.Human.TCRB-v4b.nextseq.156x12x0.vblocks.ultralight.rev8/'
+donor1 = PATH + 'donor1/'
+donor2 = PATH + 'donor2/'
+donor3 = PATH + 'donor3/'
+donor4 = PATH + 'donor4/'
 
-# all_files = glob.glob(PATH + "/*MET97*_MET82*")
+# all_files = glob.glob(PATH + "/*thing*_thing*")
 
 donor1_df = get_df(donor1)
 donor1_df['flowcell'] = '8a7a94db75d3dca90176300240ce3779'
 # donor1_calc = get_calculated_df(donor1_df)
-# donor1_calc.to_csv(PATH + 'donor1_met97A-D.csv')
+# donor1_calc.to_csv(PATH + 'donor1_thing97A-D.csv')
 
 donor2_df = get_df(donor2)
 donor2_df['flowcell'] = '8a7a94db75d3dca901763e90cac4495d'
 # donor2_calc = get_calculated_df(donor2_df)
-# donor2_calc.to_csv(PATH + 'donor2_met97A-D.csv')
+# donor2_calc.to_csv(PATH + 'donor2_thing97A-D.csv')
 
 donor3_df = get_df(donor3)
 donor3_df['flowcell'] = '8a7a94db75d3dca901763e90c96248ed'
 # donor3_calc = get_calculated_df(donor3_df)
-# donor3_calc.to_csv(PATH + 'donor3_met97A-D.csv')
+# donor3_calc.to_csv(PATH + 'donor3_thing97A-D.csv')
 
 donor4_df = get_df(donor4)
 donor4_df['flowcell'] = '8a7a94db75d3dca9017643bc4d2b379c'
 # donor4_calc = get_calculated_df(donor4_df)
-# donor4_calc.to_csv(PATH + 'donor4_met97A-D.csv')
+# donor4_calc.to_csv(PATH + 'donor4_thing97A-D.csv')
 
 concatenated = pd.concat([donor1_df.assign(dataset='donor1'),
                           donor2_df.assign(dataset='donor2'),
