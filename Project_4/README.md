@@ -308,7 +308,7 @@ donor2 = PATH + 'donor2/'
 donor3 = PATH + 'donor3/'
 donor4 = PATH + 'donor4/'
 
-# all_files = glob.glob(PATH + "/*thing*_thing*")
+all_files = glob.glob(PATH + "/*thing*_thing*")
 
 donor1_df = get_df(donor1)
 donor1_df['thingcell'] = '8a7a94db75d3dca90176300240ce3779'
