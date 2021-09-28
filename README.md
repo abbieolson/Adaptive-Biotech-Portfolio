@@ -1,4 +1,4 @@
-## Recent Projects
+## Adaptive Biotech Data Science Projects
 #### Collection of projects from my externship at [Adaptive Biotechnologies](https://www.adaptivebiotech.com/).
 *Note: Variables have been changed and references to company IP have been omitted.*
 
