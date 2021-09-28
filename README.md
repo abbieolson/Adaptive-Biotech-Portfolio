@@ -1,5 +1,4 @@
 ## Adaptive Biotech Data Science Projects
-#### Collection of projects from my externship at [Adaptive Biotechnologies](https://www.adaptivebiotech.com/).
 *Note: Variables have been changed and references to company IP have been omitted.*
 
 * [Project 1:](/Project_1/README.md) Deployed machine learning methods to analyze aspects of one of Adaptive's [core technologies](https://www.clonoseq.com/) that may have an effect on accuracy.
