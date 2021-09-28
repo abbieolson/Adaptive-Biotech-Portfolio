@@ -1,4 +1,4 @@
-## Adaptive Biotech Data Science Projects
+## Adaptive Biotechnologies Data Science Projects
 *Note: Variables have been changed and references to company IP have been omitted.*
 
 * [Project 1:](/Project_1/README.md) Deployed machine learning methods to analyze aspects of one of Adaptive's [core technologies](https://www.clonoseq.com/) that may have an effect on accuracy.
